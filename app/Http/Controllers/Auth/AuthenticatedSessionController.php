@@ -18,7 +18,7 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(Request $request): Response
     {
-        return Inertia::render('auth/login', [
+        return Inertia::render('Home/Index', [
             'canResetPassword' => Route::has('password.request'),
             'status' => $request->session()->get('status'),
         ]);
@@ -30,10 +30,16 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
-
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // Check user role and redirect accordingly
+        $user = Auth::user();
+        if ($user->isAdmin()) {
+            return redirect()->intended(route('dashboard', absolute: false));
+        } else {
+            // For regular users, redirect to home or intended page
+            return redirect()->intended(route('home', absolute: false));
+        }
     }
 
     /**

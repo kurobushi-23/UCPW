@@ -33,19 +33,25 @@ class RegisteredUserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', Rules\Password::defaults()],
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => 'user', // Set default role as user
         ]);
 
         event(new Registered($user));
-
         Auth::login($user);
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // Check user role and redirect accordingly
+        if ($user->isAdmin()) {
+            return redirect()->intended(route('dashboard', absolute: false));
+        } else {
+            // For regular users, redirect to home
+            return redirect()->intended(route('home', absolute: false));
+        }
     }
 }

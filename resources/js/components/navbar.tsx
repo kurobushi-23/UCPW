@@ -1,10 +1,8 @@
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { type SharedData } from '@/types';
-import { Link, usePage } from '@inertiajs/react';
-import { AlignRight, Milestone, SquareArrowOutUpRight, XIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { Input } from './ui/input';
+import { Link, router, usePage } from '@inertiajs/react';
+import { AlignRight, LogOut, Milestone, SquareArrowOutUpRight, XIcon } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import AuthModal from './auth-modal';
 
 const Navbar = () => {
     const { auth } = usePage<SharedData>().props;
@@ -18,7 +16,6 @@ const Navbar = () => {
         { name: 'Profil', route: 'profile' },
         { name: 'Layanan', route: 'services' },
         { name: 'Berita', route: 'news' },
-        // { name: 'Tentang Kami', route: 'about' },
     ];
 
     // Scroll effect
@@ -30,50 +27,17 @@ const Navbar = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // Component untuk Modal Auth (untuk reusability di desktop dan mobile)
-    const AuthModal = () => (
-        <Dialog>
-            <DialogTrigger asChild>
-                <button className="flex cursor-pointer items-center rounded px-4 py-1 text-sm text-[#1b1b18] dark:text-[#EDEDEC]">
-                    <Milestone className="mr-2 h-7 w-7 text-amber-600" />
-                </button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[400px]">
-                <DialogHeader>
-                    <DialogTitle>Masuk atau Daftar</DialogTitle>
-                    <DialogDescription>Pilih tab untuk masuk atau daftar</DialogDescription>
-                </DialogHeader>
+    const handleLogout = useCallback(() => {
+        router.post(route('logout'));
+    }, []);
 
-                <Tabs defaultValue="masuk" className="mt-4">
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="masuk">Masuk</TabsTrigger>
-                        <TabsTrigger value="daftar">Daftar</TabsTrigger>
-                    </TabsList>
+    const closeMenu = useCallback(() => {
+        setIsOpen(false);
+    }, []);
 
-                    <TabsContent value="masuk">
-                        <form className="mt-4 flex h-52 flex-col justify-between gap-3">
-                            <div className="flex flex-col gap-3">
-                                <Input type="email" placeholder="Email" />
-                                <Input type="password" placeholder="Password" />
-                            </div>
-                            <button className="mt-2 rounded-2xl bg-amber-600 px-3 py-2 text-white hover:bg-orange-600">Masuk</button>
-                        </form>
-                    </TabsContent>
-
-                    <TabsContent value="daftar">
-                        <form className="mt-4 flex h-52 flex-col justify-between gap-3">
-                            <div className="flex flex-col gap-3">
-                                <Input type="text" placeholder="Nama" />
-                                <Input type="email" placeholder="Email" />
-                                <Input type="password" placeholder="Password" />
-                            </div>
-                            <button className="mt-2 rounded-2xl bg-amber-600 px-3 py-2 text-white hover:bg-orange-600">Daftar</button>
-                        </form>
-                    </TabsContent>
-                </Tabs>
-            </DialogContent>
-        </Dialog>
-    );
+    const toggleMenu = useCallback(() => {
+        setIsOpen((prev) => !prev);
+    }, []);
 
     return (
         <header
@@ -90,7 +54,6 @@ const Navbar = () => {
                 {/* Desktop Menu */}
                 <div className="hidden items-center justify-between gap-6 md:flex">
                     {menuItems.map((item) => {
-                        // Perbaiki logika pengecekan active route
                         const active =
                             currentRouteName === item.route || (item.route === 'home' && (currentRouteName === null || currentRouteName === 'home'));
                         return (
@@ -101,30 +64,45 @@ const Navbar = () => {
                                     active ? 'text-amber-600' : 'text-[#1b1b18] dark:text-[#EDEDEC]'
                                 } after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-amber-600 after:transition-all after:duration-300 hover:after:w-full ${
                                     active ? 'after:w-full' : 'after:w-0'
-                                } `}
+                                }`}
                             >
                                 {item.name}
                             </Link>
                         );
                     })}
 
-                    {/* Auth Links */}
+                    {/* Auth Section Desktop */}
                     {auth.user ? (
-                        <Link
-                            href={route('dashboard')}
-                            className="rounded-sm border border-[#19140035] px-4 py-1 text-sm text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
-                        >
-                            <SquareArrowOutUpRight className="mr-2 h-7 w-7 text-amber-600" />
-                        </Link>
+                        auth.user.role === 'admin' ? (
+                            <Link
+                                href={route('dashboard')}
+                                className="rounded-sm border border-[#19140035] px-4 py-1 text-sm text-[#1b1b18] transition-colors hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
+                                title="Dashboard"
+                            >
+                                <SquareArrowOutUpRight className="mr-2 h-7 w-7 text-amber-600" />
+                            </Link>
+                        ) : (
+                            <button
+                                onClick={handleLogout}
+                                className="rounded-sm border border-[#19140035] px-4 py-1 text-sm text-[#1b1b18] transition-colors hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
+                                title="Keluar"
+                            >
+                                <LogOut className="mr-2 h-7 w-7 text-amber-600" />
+                            </button>
+                        )
                     ) : (
-                        <AuthModal />
+                        <AuthModal>
+                            <button className="flex cursor-pointer items-center rounded px-4 py-1 text-sm text-[#1b1b18] transition-colors hover:bg-amber-600/10 dark:text-[#EDEDEC]">
+                                <Milestone className="mr-2 h-7 w-7 text-amber-600" />
+                            </button>
+                        </AuthModal>
                     )}
                 </div>
 
                 {/* Hamburger Button */}
                 <button
-                    className="flex items-center rounded border border-[#19140035] px-2 py-1 text-[#1b1b18] hover:border-[#1915014a] md:hidden dark:text-[#EDEDEC]"
-                    onClick={() => setIsOpen(!isOpen)}
+                    className="flex items-center rounded border border-[#19140035] px-2 py-1 text-[#1b1b18] transition-colors hover:border-[#1915014a] md:hidden dark:text-[#EDEDEC]"
+                    onClick={toggleMenu}
                 >
                     {isOpen ? <XIcon className="h-4 w-4" /> : <AlignRight className="h-4 w-4" />}
                 </button>
@@ -133,9 +111,8 @@ const Navbar = () => {
             {/* Mobile Menu */}
             {isOpen && (
                 <div className="bg-white/10 px-4 pb-4 backdrop-blur md:hidden">
-                    {/* Menu Items dengan style hover yang sama seperti desktop */}
+                    {/* Menu Items */}
                     {menuItems.map((item) => {
-                        // Perbaiki logika pengecekan active route untuk mobile
                         const active =
                             currentRouteName === item.route || (item.route === 'home' && (currentRouteName === null || currentRouteName === 'home'));
                         return (
@@ -146,28 +123,49 @@ const Navbar = () => {
                                     active ? 'text-amber-600' : 'text-[#1b1b18] dark:text-[#EDEDEC]'
                                 } after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-amber-600 after:transition-all after:duration-300 hover:after:w-full ${
                                     active ? 'after:w-full' : 'after:w-0'
-                                } `}
-                                onClick={() => setIsOpen(false)} // Close mobile menu when link clicked
+                                }`}
+                                onClick={closeMenu}
                             >
                                 {item.name}
                             </Link>
                         );
                     })}
 
-                    {/* Auth Section di Mobile */}
+                    {/* Auth Section Mobile */}
                     <div className="mt-4 border-t border-gray-300/20 pt-4">
                         {auth.user ? (
-                            <Link
-                                href={route('dashboard')}
-                                className="flex items-center rounded-sm border border-[#19140035] px-4 py-2 text-sm text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
-                                onClick={() => setIsOpen(false)}
-                            >
-                                <SquareArrowOutUpRight className="mr-2 h-5 w-5 text-amber-600" />
-                                Dashboard
-                            </Link>
+                            auth.user.role === 'admin' ? (
+                                <Link
+                                    href={route('dashboard')}
+                                    className="flex items-center rounded-sm border border-[#19140035] px-4 py-2 text-sm text-[#1b1b18] transition-colors hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
+                                    onClick={closeMenu}
+                                >
+                                    <SquareArrowOutUpRight className="mr-2 h-5 w-5 text-amber-600" />
+                                    Dashboard
+                                </Link>
+                            ) : (
+                                <button
+                                    onClick={() => {
+                                        closeMenu();
+                                        handleLogout();
+                                    }}
+                                    className="flex w-full items-center rounded-sm border border-[#19140035] px-4 py-2 text-sm text-[#1b1b18] transition-colors hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
+                                >
+                                    <LogOut className="mr-2 h-5 w-5 text-amber-600" />
+                                    Keluar
+                                </button>
+                            )
                         ) : (
                             <div className="flex justify-center">
-                                <AuthModal />
+                                <AuthModal>
+                                    <button
+                                        onClick={closeMenu}
+                                        className="flex cursor-pointer items-center rounded px-4 py-1 text-sm text-[#1b1b18] transition-colors hover:bg-amber-600/10 dark:text-[#EDEDEC]"
+                                    >
+                                        <Milestone className="mr-2 h-7 w-7 text-amber-600" />
+                                        <span>Masuk</span>
+                                    </button>
+                                </AuthModal>
                             </div>
                         )}
                     </div>

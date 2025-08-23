@@ -17,13 +17,13 @@ Route::get('/about', [AboutController::class, 'index'])->name('about');
 Route::get('/testimonials', [HomeController::class, 'getTestimonials']);
 
 // Protected routes
+Route::middleware(['admin'])->prefix('dashboard')->group(function () {
+        Route::get('/', function () {
+            return Inertia::render('dashboard');
+        })->name('dashboard');
+    });
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return inertia::render('dashboard');
-    })->name('dashboard');
-
     // Testimonial routes
-
     Route::post('/testimonials', [HomeController::class, 'storeTestimonial'])->name('testimonials.store');
     Route::put('/testimonials/{testimonial}', [HomeController::class, 'updateTestimonial'])->name('testimonials.update');
     Route::delete('/testimonials/{testimonial}', [HomeController::class, 'deleteTestimonial'])->name('testimonials.delete');
@@ -32,3 +32,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
+
