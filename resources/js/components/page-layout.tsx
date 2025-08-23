@@ -1,5 +1,6 @@
 import Navbar from '@/components/navbar';
 import { PropsWithChildren } from 'react';
+import { Toaster } from './ui/sonner';
 
 type PageLayoutProps = PropsWithChildren;
 
@@ -13,6 +14,7 @@ export function PageLayout({ children }: PageLayoutProps) {
 
             {/* Page Content */}
             <div className="w-full">{children}</div>
+            <Toaster position="top-center" richColors closeButton />
         </main>
     );
 }

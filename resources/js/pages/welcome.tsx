@@ -64,7 +64,7 @@ export default function Welcome() {
                     </div>
                     <div className="flex max-w-xl flex-col justify-start gap-3 py-5 text-center lg:text-left">
                         <span className="text-sm font-semibold text-amber-600 sm:text-base">Memimpin dalam Bidang Konstruksi Bangunan dan Sipil</span>
-                        <p className="text-2xl leading-tight font-semibold sm:text-3xl lg:text-4xl">
+                        <p className="text-2xl leading-tight font-semibold text-black sm:text-3xl lg:text-4xl dark:text-black">
                             Komitmen untuk Memberikan Hasil Terbaik dan Berkualitas Tinggi!
                         </p>
                         <div className="mt-8 flex w-full flex-col justify-center gap-5 sm:mt-12 sm:flex-row lg:justify-start">
@@ -74,7 +74,7 @@ export default function Welcome() {
                                     <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center gap-2 rounded-xl bg-amber-600">
                                         <Cog className="h-6 w-6 text-white" />
                                     </div>
-                                    <span className="text-sm">Proyek yang selesai di 2023</span>
+                                    <span className="text-sm text-black dark:text-black">Proyek yang selesai di 2023</span>
                                 </div>
                             </div>
                             <div className="flex flex-col items-center gap-5 lg:items-start">

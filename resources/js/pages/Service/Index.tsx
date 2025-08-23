@@ -1,8 +1,6 @@
-'use client';
-
 import FooterSection from '@/components/footer-section';
 import { motion } from 'framer-motion';
-import { Award, Building, Calendar, Camera, Play, Send, Star, Truck, User, Wrench } from 'lucide-react';
+import { Award, Building, Calendar, Camera, Play, Star, Truck, User, Wrench } from 'lucide-react';
 import { useState } from 'react';
 import { PageLayout } from '../../components/page-layout';
 
@@ -283,6 +281,7 @@ export default function Index() {
 
     const activeService = servicesData[activeMenu];
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const handleSubmitComment = () => {
         if (!newComment.trim() || !newName.trim()) return;
 
@@ -478,78 +477,63 @@ export default function Index() {
                                 <p className="leading-relaxed text-gray-700">{activeService.article.content}</p>
                             </div>
 
-
-
-
                             {/* Comments Section */}
                             <div className="rounded-2xl bg-white p-8 shadow-lg">
                                 <h3 className="mb-6 text-2xl font-bold text-gray-800">Ulasan & Rating</h3>
 
+                                <form
+                                    className="mb-8 rounded-lg border border-gray-200 p-4"
+                                    onSubmit={async (e) => {
+                                        e.preventDefault();
+                                        if (!newComment.trim() || !newName.trim()) return;
 
-<form
-    className="mb-8 rounded-lg border border-gray-200 p-4"
-    onSubmit={async (e) => {
-        e.preventDefault();
-        if (!newComment.trim() || !newName.trim()) return;
+                                        // Kirim data ke backend
+                                        await fetch('http://127.0.0.1:8000/api/review', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({
+                                                service: activeMenu,
+                                                name: newName,
+                                                comment: newComment,
+                                                rating: newRating,
+                                            }),
+                                        });
+                                        // Setelah submit, fetch ulang ulasan dari backend (atau bisa langsung push ke state)
+                                        // ...opsional: fetch ulang data ulasan...
 
-        // Kirim data ke backend
-    await fetch('http://127.0.0.1:8000/api/review', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            service: activeMenu,
-            name: newName,
-            comment: newComment,
-            rating: newRating,
-        }),
-    });
-        // Setelah submit, fetch ulang ulasan dari backend (atau bisa langsung push ke state)
-        // ...opsional: fetch ulang data ulasan...
+                                        setNewComment('');
+                                        setNewName('');
+                                        setNewRating(5);
+                                    }}
+                                >
+                                    <div className="mb-2">
+                                        <label className="block text-sm font-medium text-gray-700">Nama</label>
+                                        <input
+                                            type="text"
+                                            className="mt-1 w-full rounded border px-3 py-2"
+                                            value={newName}
+                                            onChange={(e) => setNewName(e.target.value)}
+                                            required
+                                        />
+                                    </div>
 
-        setNewComment('');
-        setNewName('');
-        setNewRating(5);
-    }}
->
-    <div className="mb-2">
-        <label className="block text-sm font-medium text-gray-700">Nama</label>
-        <input
-            type="text"
-            className="mt-1 w-full rounded border px-3 py-2"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            required
-        />
-    </div>
-
-    <div className="mb-2">
-        <label className="block text-sm font-medium text-gray-700">Ulasan</label>
-        <textarea
-            className="mt-1 w-full rounded border px-3 py-2"
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            required
-        />
-    </div>
-    <div className="mb-2">
-        <label className="block text-sm font-medium text-gray-700">Rating</label>
-        {renderStars(newRating, true, setNewRating)}
-    </div>
-    <button
-        type="submit"
-        className="mt-2 rounded bg-amber-600 px-4 py-2 text-white hover:bg-amber-700"
-    >
-        Kirim Ulasan
-    </button>
-</form>
-
-
-
-
-                               
-
-
-                                
+                                    <div className="mb-2">
+                                        <label className="block text-sm font-medium text-gray-700">Ulasan</label>
+                                        <textarea
+                                            className="mt-1 w-full rounded border px-3 py-2"
+                                            value={newComment}
+                                            onChange={(e) => setNewComment(e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="mb-2">
+                                        <label className="block text-sm font-medium text-gray-700">Rating</label>
+                                        {renderStars(newRating, true, setNewRating)}
+                                    </div>
+                                    <button type="submit" className="mt-2 rounded bg-amber-600 px-4 py-2 text-white hover:bg-amber-700">
+                                        Kirim Ulasan
+                                    </button>
+                                </form>
 
                                 {/* Comments List */}
                                 <div className="space-y-4">
