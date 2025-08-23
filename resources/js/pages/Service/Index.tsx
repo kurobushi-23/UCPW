@@ -478,42 +478,78 @@ export default function Index() {
                                 <p className="leading-relaxed text-gray-700">{activeService.article.content}</p>
                             </div>
 
+
+
+
                             {/* Comments Section */}
                             <div className="rounded-2xl bg-white p-8 shadow-lg">
                                 <h3 className="mb-6 text-2xl font-bold text-gray-800">Ulasan & Rating</h3>
 
-                                {/* Add Comment Form */}
-                                <div className="mb-6 rounded-xl bg-gray-50 p-6">
-                                    <h4 className="mb-4 font-semibold text-gray-800">Berikan Ulasan Anda</h4>
-                                    <div className="space-y-4">
-                                        <input
-                                            type="text"
-                                            placeholder="Nama Anda"
-                                            value={newName}
-                                            onChange={(e) => setNewName(e.target.value)}
-                                            className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-transparent focus:ring-2 focus:ring-amber-500"
-                                        />
-                                        <div>
-                                            <label className="mb-2 block text-sm font-medium text-gray-700">Rating:</label>
-                                            {renderStars(newRating, true, setNewRating)}
-                                        </div>
-                                        <textarea
-                                            placeholder="Tulis ulasan Anda..."
-                                            value={newComment}
-                                            onChange={(e) => setNewComment(e.target.value)}
-                                            rows={4}
-                                            className="w-full resize-none rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-transparent focus:ring-2 focus:ring-amber-500"
-                                        />
-                                        <button
-                                            onClick={handleSubmitComment}
-                                            disabled={!newComment.trim() || !newName.trim()}
-                                            className="flex items-center gap-2 rounded-lg bg-amber-600 px-6 py-3 text-white transition-colors hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-50"
-                                        >
-                                            <Send className="h-4 w-4" />
-                                            Kirim Ulasan
-                                        </button>
-                                    </div>
-                                </div>
+
+<form
+    className="mb-8 rounded-lg border border-gray-200 p-4"
+    onSubmit={async (e) => {
+        e.preventDefault();
+        if (!newComment.trim() || !newName.trim()) return;
+
+        // Kirim data ke backend
+    await fetch('http://127.0.0.1:8000/api/review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            service: activeMenu,
+            name: newName,
+            comment: newComment,
+            rating: newRating,
+        }),
+    });
+        // Setelah submit, fetch ulang ulasan dari backend (atau bisa langsung push ke state)
+        // ...opsional: fetch ulang data ulasan...
+
+        setNewComment('');
+        setNewName('');
+        setNewRating(5);
+    }}
+>
+    <div className="mb-2">
+        <label className="block text-sm font-medium text-gray-700">Nama</label>
+        <input
+            type="text"
+            className="mt-1 w-full rounded border px-3 py-2"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            required
+        />
+    </div>
+
+    <div className="mb-2">
+        <label className="block text-sm font-medium text-gray-700">Ulasan</label>
+        <textarea
+            className="mt-1 w-full rounded border px-3 py-2"
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            required
+        />
+    </div>
+    <div className="mb-2">
+        <label className="block text-sm font-medium text-gray-700">Rating</label>
+        {renderStars(newRating, true, setNewRating)}
+    </div>
+    <button
+        type="submit"
+        className="mt-2 rounded bg-amber-600 px-4 py-2 text-white hover:bg-amber-700"
+    >
+        Kirim Ulasan
+    </button>
+</form>
+
+
+
+
+                               
+
+
+                                
 
                                 {/* Comments List */}
                                 <div className="space-y-4">
