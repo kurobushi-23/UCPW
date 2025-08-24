@@ -8,7 +8,7 @@ import { ArrowUpRight, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-export default function TestimonialSection() {
+export default function TestimonialSection({ onShowLoginModal }: { onShowLoginModal?: () => void }) {
     const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,19 +48,33 @@ export default function TestimonialSection() {
 
         setIsSubmitting(true);
         try {
-            router.post('/testimonials', formData, {
-                onSuccess: () => {
-                    toast.success('Testimonial berhasil ditambahkan');
-                    setFormData({ company: '', position: '', message: '' });
-                    // Refresh testimonials list after successful submission
-                    fetchTestimonials();
+            // Ganti router.post dengan fetch agar bisa cek status 401
+            const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content;
+            const res = await fetch('/testimonials', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken || '',
                 },
-                onError: (errors) => {
-                    console.error('Validation errors:', errors);
-                    toast.error('Gagal menambahkan testimonial');
-                },
-                onFinish: () => setIsSubmitting(false),
+                body: JSON.stringify(formData),
             });
+
+            if (res.status === 401 && onShowLoginModal) {
+                onShowLoginModal();
+                setIsSubmitting(false);
+                return;
+            }
+
+            if (!res.ok) {
+                toast.error('Gagal menambahkan testimonial');
+                setIsSubmitting(false);
+                return;
+            }
+
+            toast.success('Testimonial berhasil ditambahkan');
+            setFormData({ company: '', position: '', message: '' });
+            fetchTestimonials();
         } catch (error) {
             console.error('Error submitting testimonial:', error);
             toast.error('Gagal menambahkan testimonial');

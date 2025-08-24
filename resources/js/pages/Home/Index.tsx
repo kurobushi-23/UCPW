@@ -9,11 +9,14 @@ import { PageLayout } from '@/components/page-layout';
 import { CardShowcase } from '@/components/showcase';
 import { Stats } from '@/components/stats';
 import TestimonialSection from '@/components/testi-section';
+import AuthModal from '@/components/auth-modal';
 import { Head } from '@inertiajs/react';
 import { ArrowRight, ArrowUpRight, Cog, HardHat } from 'lucide-react';
+import { useState } from 'react';
 
 export default function Index() {
     const images = ['/images/building-2.svg', '/images/exa-3.svg', '/images/kontraktor.svg'];
+    const [showLoginModal, setShowLoginModal] = useState(false);
 
     return (
         <PageLayout>
@@ -149,7 +152,7 @@ export default function Index() {
 
             {/* testi section */}
             <div className="px-4 sm:px-6 lg:px-8">
-                <TestimonialSection />
+                <TestimonialSection onShowLoginModal={() => setShowLoginModal(true)} />
             </div>
 
             {/* news section */}
@@ -159,6 +162,7 @@ export default function Index() {
 
             {/* footer section */}
             <FooterSection />
+            <AuthModal open={showLoginModal} onOpenChange={setShowLoginModal} />
         </PageLayout>
     );
 }

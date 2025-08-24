@@ -1,8 +1,10 @@
 import FooterSection from '@/components/footer-section';
 import { motion } from 'framer-motion';
 import { Award, Building, Calendar, Camera, Play, Star, Truck, User, Wrench } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PageLayout } from '../../components/page-layout';
+import ReviewSection from '@/components/review-section';
+import AuthModal from '@/components/auth-modal';
 
 type Comment = {
     id: number;
@@ -11,6 +13,7 @@ type Comment = {
     comment: string;
     rating: number;
     date: string;
+    created_at?: string; // tambahkan ini
 };
 
 type ServiceData = {
@@ -278,8 +281,22 @@ export default function Index() {
         'alat-berat': servicesData['alat-berat'].comments,
     });
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [reviews, setReviews] = useState<Comment[]>([]);
+    const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+    const [showLoginModal, setShowLoginModal] = useState(false);
 
     const activeService = servicesData[activeMenu];
+
+    useEffect(() => {
+        setIsLoadingReviews(true);
+        fetch(`/services/reviews?service=${activeMenu}`)
+            .then((res) => res.json())
+            .then((data) => {
+                setReviews(data);
+                setIsLoadingReviews(false);
+            })
+            .catch(() => setIsLoadingReviews(false));
+    }, [activeMenu]);
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const handleSubmitComment = () => {
@@ -480,83 +497,50 @@ export default function Index() {
                             {/* Comments Section */}
                             <div className="rounded-2xl bg-white p-8 shadow-lg">
                                 <h3 className="mb-6 text-2xl font-bold text-gray-800">Ulasan & Rating</h3>
-
-                                <form
-                                    className="mb-8 rounded-lg border border-gray-200 p-4"
-                                    onSubmit={async (e) => {
-                                        e.preventDefault();
-                                        if (!newComment.trim() || !newName.trim()) return;
-
-                                        // Kirim data ke backend
-                                        await fetch('http://127.0.0.1:8000/api/review', {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({
-                                                service: activeMenu,
-                                                name: newName,
-                                                comment: newComment,
-                                                rating: newRating,
-                                            }),
-                                        });
-                                        // Setelah submit, fetch ulang ulasan dari backend (atau bisa langsung push ke state)
-                                        // ...opsional: fetch ulang data ulasan...
-
-                                        setNewComment('');
-                                        setNewName('');
-                                        setNewRating(5);
-                                    }}
-                                >
-                                    <div className="mb-2">
-                                        <label className="block text-sm font-medium text-gray-700">Nama</label>
-                                        <input
-                                            type="text"
-                                            className="mt-1 w-full rounded border px-3 py-2"
-                                            value={newName}
-                                            onChange={(e) => setNewName(e.target.value)}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="mb-2">
-                                        <label className="block text-sm font-medium text-gray-700">Ulasan</label>
-                                        <textarea
-                                            className="mt-1 w-full rounded border px-3 py-2"
-                                            value={newComment}
-                                            onChange={(e) => setNewComment(e.target.value)}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="mb-2">
-                                        <label className="block text-sm font-medium text-gray-700">Rating</label>
-                                        {renderStars(newRating, true, setNewRating)}
-                                    </div>
-                                    <button type="submit" className="mt-2 rounded bg-amber-600 px-4 py-2 text-white hover:bg-amber-700">
-                                        Kirim Ulasan
-                                    </button>
-                                </form>
-
-                                {/* Comments List */}
+                                <div className="mb-8 rounded-lg">
+                                    <ReviewSection
+                                        activeMenu={activeMenu}
+                                        onShowLoginModal={() => setShowLoginModal(true)}
+                                        onSuccess={() => {
+                                            setIsLoadingReviews(true);
+                                            fetch(`/services/reviews?service=${activeMenu}`)
+                                                .then((res) => res.json())
+                                                .then((data) => {
+                                                    setReviews(data);
+                                                    setIsLoadingReviews(false);
+                                                })
+                                                .catch(() => setIsLoadingReviews(false));
+                                        }}
+                                    />
+                                </div>
+                                {/* Comments List dari database */}
                                 <div className="space-y-4">
-                                    {comments[activeMenu].map((comment) => (
-                                        <motion.div
-                                            key={comment.id}
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            className="rounded-lg border border-gray-200 p-4"
-                                        >
-                                            <div className="flex items-start gap-4">
-                                                <img src={comment.avatar} alt={comment.name} className="h-10 w-10 rounded-full object-cover" />
-                                                <div className="flex-1">
-                                                    <div className="mb-2 flex items-center justify-between">
-                                                        <h5 className="font-semibold text-gray-800">{comment.name}</h5>
-                                                        <span className="text-sm text-gray-500">{formatDate(comment.date)}</span>
+                                    {isLoadingReviews ? (
+                                        <div className="text-center text-gray-500">Memuat ulasan...</div>
+                                    ) : reviews.length === 0 ? (
+                                        <div className="text-center text-gray-500">Belum ada ulasan untuk layanan ini.</div>
+                                    ) : (
+                                        reviews.map((comment) => (
+                                            <motion.div
+                                                key={comment.id}
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                className="rounded-lg border border-gray-200 p-4"
+                                            >
+                                                <div className="flex items-start gap-4">
+                                                    <img src={comment.avatar ?? `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=face`} alt={comment.name} className="h-10 w-10 rounded-full object-cover" />
+                                                    <div className="flex-1">
+                                                        <div className="mb-2 flex items-center justify-between">
+                                                            <h5 className="font-semibold text-gray-800">{comment.name}</h5>
+                                                            <span className="text-sm text-gray-500">{formatDate(comment.date ?? comment.created_at)}</span>
+                                                        </div>
+                                                        <div className="mb-2">{renderStars(comment.rating)}</div>
+                                                        <p className="text-gray-700">{comment.comment}</p>
                                                     </div>
-                                                    <div className="mb-2">{renderStars(comment.rating)}</div>
-                                                    <p className="text-gray-700">{comment.comment}</p>
                                                 </div>
-                                            </div>
-                                        </motion.div>
-                                    ))}
+                                            </motion.div>
+                                        ))
+                                    )}
                                 </div>
                             </div>
                         </motion.div>
@@ -581,6 +565,9 @@ export default function Index() {
                     />
                 </motion.div>
             )}
+
+            {/* Login Modal */}
+            <AuthModal open={showLoginModal} onOpenChange={setShowLoginModal} />
 
             {/* Footer */}
             <div className="mt-12">

@@ -12,5 +12,11 @@ class Review extends Model
         'name',
         'comment',
         'rating',
+        'user_id', // tambahkan ini
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

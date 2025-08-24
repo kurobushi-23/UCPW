@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Calendar, Eye, Heart } from 'lucide-react';
 import { useState } from 'react';
 import { PageLayout } from '../../components/page-layout';
+import { usePage } from '@inertiajs/react';
 
 type NewsItem = {
     id: number;
@@ -13,231 +14,44 @@ type NewsItem = {
     date: string;
     author: string;
     readTime: number;
+    category?: string;
+    subcategory?: string;
 };
 
 type UtamaSubCategory = 'proyek' | 'industri';
 type LainnyaSubCategory = 'teknologi' | 'sosial';
 
-type NewsData = {
-    utama: Record<UtamaSubCategory, NewsItem[]>;
-    lainnya: Record<LainnyaSubCategory, NewsItem[]>;
-};
-
-const newsData: NewsData = {
-    utama: {
-        proyek: [
-            {
-                id: 1,
-                title: 'Proyek Jalan Tol Trans Jawa Fase 2 Dimulai',
-                description:
-                    'Pembangunan jalan tol sepanjang 150 km yang menghubungkan Jakarta-Surabaya memasuki fase kedua dengan investasi Rp 25 triliun.',
-                image: 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=800&h=400&fit=crop',
-                likes: 450,
-                views: 2100,
-                date: '2025-08-22',
-                author: 'Ahmad Surya',
-                readTime: 5,
-            },
-            {
-                id: 2,
-                title: 'Gedung Industri Modern di Karawang Diresmikan',
-                description:
-                    'Kompleks industri seluas 50 hektar dengan teknologi ramah lingkungan resmi beroperasi dan menciptakan 3000 lapangan kerja.',
-                image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=400&fit=crop',
-                likes: 380,
-                views: 1800,
-                date: '2025-08-21',
-                author: 'Siti Nurhaliza',
-                readTime: 4,
-            },
-            {
-                id: 3,
-                title: 'Pembangunan Pelabuhan Patimban Tahap III',
-                description: 'Proyek ekspansi pelabuhan dengan kapasitas 2 juta TEUs per tahun untuk mendukung perdagangan internasional.',
-                image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=400&fit=crop',
-                likes: 520,
-                views: 2800,
-                date: '2025-08-20',
-                author: 'Budi Santoso',
-                readTime: 6,
-            },
-            {
-                id: 4,
-                title: 'Proyek MRT Jakarta Fase 4 Groundbreaking',
-                description: 'Peresmian pembangunan jalur MRT baru sepanjang 25 km yang akan melayani rute Jakarta Timur - Jakarta Barat.',
-                image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&h=400&fit=crop',
-                likes: 680,
-                views: 3200,
-                date: '2025-08-19',
-                author: 'Dewi Lestari',
-                readTime: 7,
-            },
-        ],
-        industri: [
-            {
-                id: 5,
-                title: 'Pabrik Baja Terbesar di Cilegon Beroperasi Penuh',
-                description: 'Fasilitas produksi dengan kapasitas 2 juta ton per tahun mulai beroperasi penuh setelah investasi USD 1.5 miliar.',
-                image: 'https://images.unsplash.com/photo-1565611419350-5828474feee1?w=800&h=400&fit=crop',
-                likes: 420,
-                views: 2400,
-                date: '2025-08-18',
-                author: 'Rudi Hartono',
-                readTime: 5,
-            },
-            {
-                id: 6,
-                title: 'Kolaborasi Strategis dengan Supplier Global',
-                description: 'Kemitraan dengan 15 supplier internasional untuk meningkatkan kualitas dan efisiensi rantai pasok manufaktur.',
-                image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&h=400&fit=crop',
-                likes: 290,
-                views: 1600,
-                date: '2025-08-17',
-                author: 'Maya Sari',
-                readTime: 4,
-            },
-            {
-                id: 7,
-                title: 'Zona Industri Hijau Batam Resmi Dibuka',
-                description: 'Kawasan industri ramah lingkungan seluas 200 hektar dengan standar internasional mulai menerima investor.',
-                image: 'https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&h=400&fit=crop',
-                likes: 340,
-                views: 1900,
-                date: '2025-08-16',
-                author: 'Joko Widodo',
-                readTime: 6,
-            },
-            {
-                id: 8,
-                title: 'Ekspansi Pabrik Otomotif ke Kalimantan',
-                description: 'Pembukaan fasilitas produksi kendaraan bermotor baru dengan teknologi hybrid untuk pasar domestik dan ekspor.',
-                image: 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=800&h=400&fit=crop',
-                likes: 510,
-                views: 2700,
-                date: '2025-08-15',
-                author: 'Indra Gunawan',
-                readTime: 5,
-            },
-        ],
-    },
-    lainnya: {
-        teknologi: [
-            {
-                id: 9,
-                title: 'Implementasi AI dalam Konstruksi Meningkat 300%',
-                description: 'Penggunaan kecerdasan buatan untuk optimalisasi proyek konstruksi menunjukkan peningkatan efisiensi yang signifikan.',
-                image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=400&fit=crop',
-                likes: 720,
-                views: 4200,
-                date: '2025-08-22',
-                author: 'Dr. Andi Pratama',
-                readTime: 8,
-            },
-            {
-                id: 10,
-                title: 'Robot Konstruksi Masa Depan Hadir di Indonesia',
-                description: 'Teknologi robotika canggih untuk konstruksi otomatis mulai diujicoba di beberapa proyek percontohan.',
-                image: 'https://images.unsplash.com/photo-1561144257-e32e6282ceda?w=800&h=400&fit=crop',
-                likes: 580,
-                views: 3100,
-                date: '2025-08-20',
-                author: 'Prof. Lisa Handayani',
-                readTime: 6,
-            },
-            {
-                id: 11,
-                title: 'IoT untuk Monitoring Infrastruktur Real-time',
-                description: 'Sistem pemantauan berbasis Internet of Things diterapkan untuk mengawasi kondisi jembatan dan gedung tinggi.',
-                image: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=800&h=400&fit=crop',
-                likes: 450,
-                views: 2600,
-                date: '2025-08-18',
-                author: 'Ir. Bambang Susilo',
-                readTime: 7,
-            },
-            {
-                id: 12,
-                title: 'Blockchain untuk Transparansi Proyek Publik',
-                description: 'Implementasi teknologi blockchain dalam pengelolaan anggaran dan progress proyek infrastruktur pemerintah.',
-                image: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&h=400&fit=crop',
-                likes: 390,
-                views: 2200,
-                date: '2025-08-16',
-                author: 'Sarah Wijaya',
-                readTime: 5,
-            },
-        ],
-        sosial: [
-            {
-                id: 13,
-                title: 'Program CSR Pendidikan di 100 Sekolah',
-                description: 'Inisiatif renovasi dan pembangunan fasilitas pendidikan untuk meningkatkan akses pendidikan berkualitas.',
-                image: 'https://images.unsplash.com/photo-1497486751825-1233686d5d80?w=800&h=400&fit=crop',
-                likes: 620,
-                views: 3500,
-                date: '2025-08-21',
-                author: 'Nina Karlina',
-                readTime: 4,
-            },
-            {
-                id: 14,
-                title: 'Pemberdayaan Masyarakat Lokal Melalui UMKM',
-                description: 'Program pelatihan dan bantuan modal untuk 500 UMKM di sekitar lokasi proyek konstruksi besar.',
-                image: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=800&h=400&fit=crop',
-                likes: 480,
-                views: 2900,
-                date: '2025-08-19',
-                author: 'Hendra Setiawan',
-                readTime: 5,
-            },
-            {
-                id: 15,
-                title: 'Kampanye Go Green di Lingkungan Kerja',
-                description: 'Implementasi program ramah lingkungan dan pengurangan jejak karbon di semua fasilitas perusahaan.',
-                image: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&h=400&fit=crop',
-                likes: 350,
-                views: 1800,
-                date: '2025-08-17',
-                author: 'Luki Hermawan',
-                readTime: 6,
-            },
-            {
-                id: 16,
-                title: 'Bantuan Korban Bencana Alam NTB',
-                description: 'Program bantuan darurat dan pembangunan kembali infrastruktur untuk korban gempa bumi di Lombok.',
-                image: 'https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=800&h=400&fit=crop',
-                likes: 890,
-                views: 4800,
-                date: '2025-08-15',
-                author: 'Maria Gonzales',
-                readTime: 8,
-            },
-        ],
-    },
-};
-
 export default function Index() {
+    // Ambil data berita dari backend
+    const { news = [] } = usePage().props as { news?: NewsItem[] };
+
+    // State kategori, subkategori, filter
     const [activeCategory, setActiveCategory] = useState<'utama' | 'lainnya'>('utama');
     const [activeSub, setActiveSub] = useState<UtamaSubCategory | LainnyaSubCategory>('proyek');
     const [filter, setFilter] = useState<'terbaru' | 'disukai' | 'trending'>('terbaru');
     const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
 
-    const subCategories = Object.keys(newsData[activeCategory]) as UtamaSubCategory[] | LainnyaSubCategory[];
-    let newsList: NewsItem[] = [];
+    // Subkategori sesuai kategori aktif
+    const subCategories =
+        activeCategory === 'utama'
+            ? (['proyek', 'industri'] as UtamaSubCategory[])
+            : (['teknologi', 'sosial'] as LainnyaSubCategory[]);
 
-    if (activeCategory === 'utama') {
-        newsList = newsData.utama[activeSub as UtamaSubCategory];
-    } else {
-        newsList = newsData.lainnya[activeSub as LainnyaSubCategory];
-    }
+    // Filter berita dari tabel sesuai kategori & subkategori
+    let newsList = news.filter((item) => {
+        return (
+            item.category === activeCategory &&
+            item.subcategory === activeSub
+        );
+    });
 
-    // Apply filter
+    // Apply filter side menu
     if (filter === 'terbaru') {
         newsList = [...newsList].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     } else if (filter === 'disukai') {
-        newsList = [...newsList].sort((a, b) => b.likes - a.likes);
+        newsList = [...newsList].sort((a, b) => (b.likes ?? 0) - (a.likes ?? 0));
     } else if (filter === 'trending') {
-        newsList = [...newsList].sort((a, b) => b.views - a.views);
+        newsList = [...newsList].sort((a, b) => (b.views ?? 0) - (a.views ?? 0));
     }
 
     const handleNewsClick = (news: NewsItem) => {
@@ -260,7 +74,6 @@ export default function Index() {
                     <button onClick={() => setSelectedNews(null)} className="mb-6 flex items-center gap-2 text-amber-600 hover:text-amber-700">
                         ← Kembali ke Berita
                     </button>
-
                     <motion.article
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -271,7 +84,6 @@ export default function Index() {
                             <img src={selectedNews.image} alt={selectedNews.title} className="h-full w-full object-cover" />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                         </div>
-
                         <div className="p-6 md:p-8">
                             <div className="mb-4 flex flex-wrap items-center gap-4 text-sm text-gray-600">
                                 <span className="flex items-center gap-1">
@@ -281,39 +93,19 @@ export default function Index() {
                                 <span>By {selectedNews.author}</span>
                                 <span>{selectedNews.readTime} min read</span>
                             </div>
-
                             <h1 className="mb-4 text-2xl font-bold text-gray-900 md:text-4xl">{selectedNews.title}</h1>
-
                             <div className="mb-6 flex items-center gap-6 text-gray-600">
                                 <span className="flex items-center gap-2">
                                     <Heart className="h-5 w-5 text-red-500" />
-                                    {selectedNews.likes.toLocaleString()}
+                                    {selectedNews.likes?.toLocaleString()}
                                 </span>
                                 <span className="flex items-center gap-2">
                                     <Eye className="h-5 w-5" />
-                                    {selectedNews.views.toLocaleString()}
+                                    {selectedNews.views?.toLocaleString()}
                                 </span>
                             </div>
-
                             <div className="prose prose-lg max-w-none">
                                 <p className="mb-6 text-lg leading-relaxed text-gray-700">{selectedNews.description}</p>
-
-                                {/* Placeholder for additional content */}
-                                <div className="space-y-4 text-gray-700">
-                                    <p>
-                                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore
-                                        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-                                        consequat.
-                                    </p>
-                                    <p>
-                                        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-                                        Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                                    </p>
-                                    <p>
-                                        Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem
-                                        aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.
-                                    </p>
-                                </div>
                             </div>
                         </div>
                     </motion.article>
@@ -333,7 +125,6 @@ export default function Index() {
             >
                 <div className="absolute top-0 right-0 h-64 w-64 rounded-full bg-amber-400/10 blur-3xl md:h-96 md:w-96"></div>
                 <div className="absolute bottom-0 left-0 h-32 w-32 rounded-full bg-amber-300/20 blur-2xl md:h-64 md:w-64"></div>
-
                 <div className="relative z-10 flex h-full items-center justify-center">
                     <div className="text-center text-white">
                         <h1 className="mb-2 text-3xl font-bold md:text-5xl">Pusat Berita</h1>
@@ -341,7 +132,6 @@ export default function Index() {
                     </div>
                 </div>
             </motion.div>
-
             {/* Main Content */}
             <div className="relative mx-auto mt-16 w-full max-w-7xl px-4 font-montserrat md:-mt-20">
                 <div className="flex flex-col lg:flex-row lg:gap-8">
@@ -375,7 +165,6 @@ export default function Index() {
                                     ))}
                                 </div>
                             </div>
-
                             {/* Sub Categories */}
                             <div className="mb-6">
                                 <h3 className="mb-4 text-lg font-semibold text-gray-800">Sub Kategori</h3>
@@ -395,7 +184,6 @@ export default function Index() {
                                     ))}
                                 </div>
                             </div>
-
                             {/* Filter */}
                             <div>
                                 <h3 className="mb-4 text-lg font-semibold text-gray-800">Filter</h3>
@@ -407,7 +195,6 @@ export default function Index() {
                                     ].map(({ key, label }) => (
                                         <button
                                             key={key}
-                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                             onClick={() => setFilter(key as any)}
                                             className={`rounded-lg px-3 py-2 text-sm transition-all duration-200 ${
                                                 filter === key ? 'bg-amber-500 text-white shadow-md' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
@@ -420,7 +207,6 @@ export default function Index() {
                             </div>
                         </div>
                     </aside>
-
                     {/* News Content */}
                     <section className="flex-1">
                         <motion.div
@@ -449,13 +235,11 @@ export default function Index() {
                                             {news.readTime} min read
                                         </div>
                                     </div>
-
                                     <div className="p-6">
                                         <h3 className="mb-3 line-clamp-2 text-xl font-bold text-gray-900 transition-colors duration-200 group-hover:text-amber-600">
                                             {news.title}
                                         </h3>
                                         <p className="mb-4 line-clamp-3 text-sm leading-relaxed text-gray-600">{news.description}</p>
-
                                         <div className="mb-4 flex items-center justify-between text-sm text-gray-500">
                                             <span className="flex items-center gap-1">
                                                 <Calendar className="h-4 w-4" />
@@ -463,7 +247,6 @@ export default function Index() {
                                             </span>
                                             <span className="font-medium">{news.author}</span>
                                         </div>
-
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-4 text-sm text-gray-600">
                                                 <span className="flex items-center gap-1">
@@ -483,6 +266,9 @@ export default function Index() {
                                     </div>
                                 </motion.div>
                             ))}
+                            {newsList.length === 0 && (
+                                <div className="col-span-full text-center text-gray-500 py-10">Belum ada berita.</div>
+                            )}
                         </motion.div>
                     </section>
                 </div>

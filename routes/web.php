@@ -16,18 +16,31 @@ Route::get('/news', [NewsController::class, 'index'])->name('news');
 Route::get('/about', [AboutController::class, 'index'])->name('about');
 Route::get('/testimonials', [HomeController::class, 'getTestimonials']);
 
+Route::get('/services/reviews', [ServiceController::class, 'getReviews']);
+
 // Protected routes
 Route::middleware(['admin'])->prefix('dashboard')->group(function () {
         Route::get('/', function () {
             return Inertia::render('dashboard');
         })->name('dashboard');
+
+        Route::get('/news', [NewsController::class, 'apiIndex']);
+        Route::post('/news', [NewsController::class, 'store']);
+        Route::get('/news/{id}', [NewsController::class, 'show']);
+        Route::put('/news/{id}', [NewsController::class, 'update']);
+        Route::delete('/news/{id}', [NewsController::class, 'destroy']);
     });
+
 Route::middleware(['auth', 'verified'])->group(function () {
     // Testimonial routes
     Route::post('/testimonials', [HomeController::class, 'storeTestimonial'])->name('testimonials.store');
     Route::put('/testimonials/{testimonial}', [HomeController::class, 'updateTestimonial'])->name('testimonials.update');
     Route::delete('/testimonials/{testimonial}', [HomeController::class, 'deleteTestimonial'])->name('testimonials.delete');
     Route::put('/testimonials/{testimonial}/toggle-featured', [HomeController::class, 'toggleFeatured'])->name('testimonials.toggle-featured');
+
+    Route::post('/services/review', [ServiceController::class, 'storeReview'])
+    ->middleware('auth')
+    ->name('services.review.store');
 });
 
 require __DIR__.'/settings.php';

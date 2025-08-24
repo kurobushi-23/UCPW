@@ -8,10 +8,12 @@ import { Milestone } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
 interface AuthModalProps {
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
     children?: React.ReactNode;
 }
 
-const AuthModal: React.FC<AuthModalProps> = ({ children }) => {
+const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, children }) => {
     const { auth, errors } = usePage<SharedData>().props;
     const [isOpen, setIsOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('masuk');
@@ -106,8 +108,18 @@ const AuthModal: React.FC<AuthModalProps> = ({ children }) => {
         setRegisterData((prev) => ({ ...prev, password: e.target.value }));
     }, []);
 
+    useEffect(() => {
+        if (typeof open === 'boolean') setIsOpen(open);
+    }, [open]);
+
+    // Saat modal dibuka/tutup, panggil onOpenChange jika ada
+    const handleOpenChange = (val: boolean) => {
+        setIsOpen(val);
+        if (onOpenChange) onOpenChange(val);
+    };
+
     return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <Dialog open={isOpen} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
                 {children || (
                     <button className="flex cursor-pointer items-center rounded px-4 py-1 text-sm text-[#1b1b18] dark:text-[#EDEDEC]">

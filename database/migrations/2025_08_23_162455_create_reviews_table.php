@@ -13,11 +13,15 @@ return new class extends Migration
     {
         Schema::create('reviews', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('user_id'); // tambahkan ini
             $table->string('service'); // kontraktor, konstruksi, alat-berat
             $table->string('name');
             $table->text('comment');
             $table->unsignedTinyInteger('rating');
             $table->timestamps();
+
+            // Foreign key ke tabel users
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 
