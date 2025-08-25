@@ -15,7 +15,7 @@ class Testimonial extends Model
         'company',
         'message',
         'avatar',
-        'is_featured'
+        'is_featured',
     ];
 
     protected $with = ['user'];

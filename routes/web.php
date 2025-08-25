@@ -24,12 +24,32 @@ Route::middleware(['admin'])->prefix('dashboard')->group(function () {
             return Inertia::render('dashboard');
         })->name('dashboard');
 
+        // CRUD berita
         Route::get('/news', [NewsController::class, 'apiIndex']);
         Route::post('/news', [NewsController::class, 'store']);
         Route::get('/news/{id}', [NewsController::class, 'show']);
         Route::put('/news/{id}', [NewsController::class, 'update']);
         Route::delete('/news/{id}', [NewsController::class, 'destroy']);
-    });
+
+        // CRUD review (hanya admin)
+        Route::get('/reviews', [ServiceController::class, 'dashboardReviews']);
+        Route::post('/reviews', [ServiceController::class, 'dashboardStoreReview']);
+        Route::put('/reviews/{id}', [ServiceController::class, 'dashboardUpdateReview']);
+        Route::delete('/reviews/{id}', [ServiceController::class, 'dashboardDeleteReview']);
+
+        // CRUD Testimoni
+        Route::get('/CrudTestimonials', [HomeController::class, 'dashboardTestimonials']);
+        //entah kenapa route nya nyampur
+        //Route::post('/CrudTestimonials', [HomeController::class, 'dashboardStoreTestimonial']);
+        Route::put('/CrudTestimonials/{id}', [HomeController::class, 'dashboardUpdateTestimonial']);
+        Route::delete('/CrudTestimonials/{id}', [HomeController::class, 'dashboardDeleteTestimonial']);
+
+        //CRUD Gallery
+        Route::get('/galleries', [HomeController::class, 'dashboardGalleries']);
+        Route::post('/galleries', [HomeController::class, 'dashboardStoreGallery']);
+        Route::put('/galleries/{id}', [HomeController::class, 'dashboardUpdateGallery']);
+        Route::delete('/galleries/{id}', [HomeController::class, 'dashboardDeleteGallery']);
+        });
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Testimonial routes
@@ -41,7 +61,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/services/review', [ServiceController::class, 'storeReview'])
     ->middleware('auth')
     ->name('services.review.store');
+
+    Route::get('/news/{id}/like-status', [NewsController::class, 'likeStatus']);
 });
+
+
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

@@ -44,4 +44,42 @@ class ServiceController extends Controller
         return response()->json($reviews);
     }
     
+    public function dashboardReviews()
+    {
+        // Tampilkan semua review untuk dashboard
+        return response()->json(\App\Models\Review::orderByDesc('created_at')->get());
+    }
+
+    public function dashboardStoreReview(Request $request)
+    {
+        $validated = $request->validate([
+            'service' => 'required|string',
+            'name' => 'required|string|max:100',
+            'comment' => 'required|string',
+            'rating' => 'required|integer|min:1|max:5',
+        ]);
+        $validated['user_id'] = auth()->id();
+        $review = \App\Models\Review::create($validated);
+        return response()->json($review, 201);
+    }
+
+    public function dashboardUpdateReview(Request $request, $id)
+    {
+        $review = \App\Models\Review::findOrFail($id);
+        $validated = $request->validate([
+            'service' => 'required|string',
+            'name' => 'required|string|max:100',
+            'comment' => 'required|string',
+            'rating' => 'required|integer|min:1|max:5',
+        ]);
+        $review->update($validated);
+        return response()->json($review);
+    }
+
+    public function dashboardDeleteReview($id)
+    {
+        $review = \App\Models\Review::findOrFail($id);
+        $review->delete();
+        return response()->json(['message' => 'Review dihapus']);
+    }
 }

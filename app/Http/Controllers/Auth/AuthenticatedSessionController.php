@@ -32,13 +32,11 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
         $request->session()->regenerate();
 
-        // Check user role and redirect accordingly
         $user = Auth::user();
         if ($user->isAdmin()) {
-            return redirect()->intended(route('dashboard', absolute: false));
+            return redirect()->intended(route('dashboard', absolute: false) . '?reload=1');
         } else {
-            // For regular users, redirect to home or intended page
-            return redirect()->intended(route('home', absolute: false));
+            return redirect()->intended(route('home', absolute: false) . '?reload=1');
         }
     }
 
@@ -52,6 +50,6 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect('/?reload=1');
     }
 }

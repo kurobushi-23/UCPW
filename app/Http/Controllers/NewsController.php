@@ -71,4 +71,8 @@ class NewsController extends Controller
         $news->delete();
         return response()->json(['message' => 'Berita dihapus']);
     }
+
+
+
+    
 }

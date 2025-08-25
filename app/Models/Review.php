@@ -12,7 +12,7 @@ class Review extends Model
         'name',
         'comment',
         'rating',
-        'user_id', // tambahkan ini
+        'user_id',
     ];
 
     public function user()

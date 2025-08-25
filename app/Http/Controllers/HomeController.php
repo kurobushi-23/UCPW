@@ -97,4 +97,80 @@ class HomeController extends Controller
 
         return redirect()->back()->with('message', 'Status featured testimonial berhasil diubah');
     }
+
+    public function dashboardTestimonials()
+    {
+        return response()->json(\App\Models\Testimonial::with('user')->orderByDesc('id')->get());
+    }
+
+    public function dashboardStoreTestimonial(Request $request)
+    {
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'position' => 'nullable|string|max:255',
+            'company' => 'nullable|string|max:255',
+            'message' => 'required|string',
+            'avatar' => 'nullable|string|max:255', // URL atau path file
+            'is_featured' => 'boolean',
+        ]);
+        $testimonial = \App\Models\Testimonial::create($validated);
+        return response()->json($testimonial, 201);
+    }
+
+    public function dashboardUpdateTestimonial(Request $request, $id)
+    {
+        $testimonial = \App\Models\Testimonial::findOrFail($id);
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'position' => 'nullable|string|max:255',
+            'company' => 'nullable|string|max:255',
+            'message' => 'required|string',
+            'avatar' => 'nullable|string|max:255',
+            'is_featured' => 'boolean',
+        ]);
+        $testimonial->update($validated);
+        return response()->json($testimonial);
+    }
+
+    public function dashboardDeleteTestimonial($id)
+    {
+        $testimonial = \App\Models\Testimonial::findOrFail($id);
+        $testimonial->delete();
+        return response()->json(['message' => 'Testimonial dihapus']);
+    }
+
+    public function dashboardGalleries()
+    {
+        return response()->json(\App\Models\Gallery::orderByDesc('id')->get());
+    }
+
+    public function dashboardStoreGallery(Request $request)
+    {
+        $validated = $request->validate([
+            'caption' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'image' => 'required|string|max:255',
+        ]);
+        $gallery = \App\Models\Gallery::create($validated);
+        return response()->json($gallery, 201);
+    }
+
+    public function dashboardUpdateGallery(Request $request, $id)
+    {
+        $gallery = \App\Models\Gallery::findOrFail($id);
+        $validated = $request->validate([
+            'caption' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'image' => 'required|string|max:255',
+        ]);
+        $gallery->update($validated);
+        return response()->json($gallery);
+    }
+
+    public function dashboardDeleteGallery($id)
+    {
+        $gallery = \App\Models\Gallery::findOrFail($id);
+        $gallery->delete();
+        return response()->json(['message' => 'Galeri dihapus']);
+    }
 }
