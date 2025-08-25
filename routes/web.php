@@ -62,10 +62,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     ->middleware('auth')
     ->name('services.review.store');
 
-    Route::get('/news/{id}/like-status', [NewsController::class, 'likeStatus']);
+ 
+
 });
 
-
+   // Increment view count for a news article
+    Route::post('/news/{id}/increment-view', [NewsController::class, 'incrementView']);
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

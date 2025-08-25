@@ -43,7 +43,11 @@ class NewsController extends Controller
     public function show($id)
     {
         $news = News::findOrFail($id);
-        return response()->json($news);
+        $isLiked = $news->likes()->where('user_id', auth()->id())->exists();
+        return response()->json([
+            ...$news->toArray(),
+            'isLiked' => $isLiked,
+        ]);
     }
 
     public function update(Request $request, $id)
@@ -72,7 +76,34 @@ class NewsController extends Controller
         return response()->json(['message' => 'Berita dihapus']);
     }
 
+    public function toggleLike($id)
+    {
+        $news = News::findOrFail($id);
+        $user = auth()->user();
 
+        if ($news->likes()->where('user_id', $user->id)->exists()) {
+            // Unlike
+            $news->likes()->detach($user->id);
+            $news->decrement('likes');
+            $liked = false;
+        } else {
+            // Like
+            $news->likes()->attach($user->id);
+            $news->increment('likes');
+            $liked = true;
+        }
 
+        return response()->json([
+            'liked' => $liked,
+            'likeCount' => $news->likes()->count(),
+        ]);
+    }
+
+    public function incrementView($id)
+    {
+        $news = News::findOrFail($id);
+        $news->increment('views');
+        return response()->json(['success' => true, 'views' => $news->views]);
+    }
     
 }

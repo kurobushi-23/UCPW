@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { ArrowRight, Calendar, Eye, Heart } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PageLayout } from '../../components/page-layout';
 import { usePage } from '@inertiajs/react';
 
@@ -30,6 +30,9 @@ export default function Index() {
     const [activeSub, setActiveSub] = useState<UtamaSubCategory | LainnyaSubCategory>('proyek');
     const [filter, setFilter] = useState<'terbaru' | 'disukai' | 'trending'>('terbaru');
     const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
+
+    // Tambahkan state untuk views detail
+    const [detailViews, setDetailViews] = useState<number | null>(null);
 
     // Subkategori sesuai kategori aktif
     const subCategories =
@@ -66,6 +69,23 @@ export default function Index() {
         });
     };
 
+    // Tambahkan useEffect untuk update view saat detail dibuka
+    useEffect(() => {
+        if (selectedNews) {
+            fetch(`/news/${selectedNews.id}/increment-view`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '',
+                    'Accept': 'application/json',
+                },
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.views !== undefined) setDetailViews(data.views);
+                });
+        }
+    }, [selectedNews]);
+
     // Detail View Component
     if (selectedNews) {
         return (
@@ -101,7 +121,7 @@ export default function Index() {
                                 </span>
                                 <span className="flex items-center gap-2">
                                     <Eye className="h-5 w-5" />
-                                    {selectedNews.views?.toLocaleString()}
+                                    {(detailViews ?? selectedNews.views)?.toLocaleString()}
                                 </span>
                             </div>
                             <div className="prose prose-lg max-w-none">

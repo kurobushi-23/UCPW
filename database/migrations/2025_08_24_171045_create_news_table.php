@@ -34,4 +34,8 @@ public function up()
     {
         Schema::dropIfExists('news');
     }
+    public function likes()
+    {
+        return $this->belongsToMany(User::class, 'news_likes')->withTimestamps();
+    }
 };

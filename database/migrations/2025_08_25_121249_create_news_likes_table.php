@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('news_likes', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('news_id');
-            $table->unsignedBigInteger('user_id');
+            $table->foreignId('news_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
             $table->unique(['news_id', 'user_id']);
         });
