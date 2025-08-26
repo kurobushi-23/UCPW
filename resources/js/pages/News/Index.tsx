@@ -34,6 +34,10 @@ export default function Index() {
     // Tambahkan state untuk views detail
     const [detailViews, setDetailViews] = useState<number | null>(null);
 
+    // Tambahkan di atas komponen
+    const [isLiked, setIsLiked] = useState(false);
+    const [likeCount, setLikeCount] = useState(selectedNews?.likes ?? 0);
+
     // Subkategori sesuai kategori aktif
     const subCategories =
         activeCategory === 'utama'
@@ -86,6 +90,33 @@ export default function Index() {
         }
     }, [selectedNews]);
 
+    // Set status like saat buka detail
+    useEffect(() => {
+        if (selectedNews) {
+            setIsLiked((selectedNews as any).isLiked ?? false); // backend harus kirim isLiked
+            setLikeCount(selectedNews.likes ?? 0);
+        }
+    }, [selectedNews]);
+
+    const handleLike = async () => {
+        if (!selectedNews) return;
+        const res = await fetch(`/news/${selectedNews.id}/like`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '',
+            },
+        });
+        const contentType = res.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            const data = await res.json();
+            setIsLiked(data.liked);
+            setLikeCount(data.likeCount);
+        } else {
+            alert('Terjadi error. Pastikan Anda sudah login.');
+        }
+    };
+
     // Detail View Component
     if (selectedNews) {
         return (
@@ -115,10 +146,15 @@ export default function Index() {
                             </div>
                             <h1 className="mb-4 text-2xl font-bold text-gray-900 md:text-4xl">{selectedNews.title}</h1>
                             <div className="mb-6 flex items-center gap-6 text-gray-600">
-                                <span className="flex items-center gap-2">
-                                    <Heart className="h-5 w-5 text-red-500" />
-                                    {selectedNews.likes?.toLocaleString()}
-                                </span>
+                                <button
+                                    onClick={handleLike}
+                                    className={`flex items-center gap-2 ${isLiked ? 'text-red-500' : ''}`}
+                                    aria-label={isLiked ? 'Unlike' : 'Like'}
+                                >
+                                    <Heart className="h-5 w-5" fill={isLiked ? 'currentColor' : 'none'} />
+                                    {likeCount.toLocaleString()}
+                                    <span className="ml-2">{isLiked ? 'Disukai' : 'Suka'}</span>
+                                </button>
                                 <span className="flex items-center gap-2">
                                     <Eye className="h-5 w-5" />
                                     {(detailViews ?? selectedNews.views)?.toLocaleString()}

@@ -62,7 +62,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     ->middleware('auth')
     ->name('services.review.store');
 
- 
+    //like
+    Route::middleware('auth')->post('/news/{id}/like', [NewsController::class, 'toggleLike']);
 
 });
 

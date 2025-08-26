@@ -82,12 +82,10 @@ class NewsController extends Controller
         $user = auth()->user();
 
         if ($news->likes()->where('user_id', $user->id)->exists()) {
-            // Unlike
             $news->likes()->detach($user->id);
             $news->decrement('likes');
             $liked = false;
         } else {
-            // Like
             $news->likes()->attach($user->id);
             $news->increment('likes');
             $liked = true;
