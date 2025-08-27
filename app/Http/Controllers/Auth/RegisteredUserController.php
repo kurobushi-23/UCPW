@@ -48,7 +48,7 @@ class RegisteredUserController extends Controller
 
         // Check user role and redirect accordingly
         if ($user->isAdmin()) {
-            return redirect()->intended(route('dashboard', absolute: false));
+            return redirect()->intended(route('dashboard.index', absolute: false));
         } else {
             // For regular users, redirect to home
             return redirect()->intended(route('home', absolute: false));

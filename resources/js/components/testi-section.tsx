@@ -1,36 +1,23 @@
+// testi-section.tsx
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import type { Testimonial } from '@/types/testimonial';
-import { router } from '@inertiajs/react';
+import { Avatar, AvatarFallback } from '@radix-ui/react-avatar';
 import { ArrowUpRight, Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
-export default function TestimonialSection({ onShowLoginModal }: { onShowLoginModal?: () => void }) {
-    const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
+export default function TestimonialSection({
+    testimonials: initialTestimonials,
+    onShowLoginModal,
+}: {
+    testimonials: Testimonial[];
+    onShowLoginModal?: () => void;
+}) {
+    const [testimonials, setTestimonials] = useState<Testimonial[]>(initialTestimonials);
     const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const fetchTestimonials = async () => {
-        setIsLoading(true);
-        try {
-            const response = await fetch('/testimonials');
-            if (!response.ok) throw new Error('Failed to fetch testimonials');
-            const data = await response.json();
-            setTestimonials(data);
-        } catch (error) {
-            console.error('Error fetching testimonials:', error);
-            toast.error('Gagal memuat testimonial');
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchTestimonials();
-    }, []);
 
     const [formData, setFormData] = useState({
         position: '',
@@ -38,48 +25,81 @@ export default function TestimonialSection({ onShowLoginModal }: { onShowLoginMo
         message: '',
     });
 
-    // Calculate testimonial stats
+    // Stats
     const totalTestimonials = testimonials.length;
     const featuredTestimonials = testimonials.filter((t) => t.is_featured).length;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.company || !formData.message || !formData.position) return;
+
+        // Validate form
+        if (!formData.company || !formData.message || !formData.position) {
+            toast.error('Semua field harus diisi');
+            return;
+        }
 
         setIsSubmitting(true);
+
         try {
-            // Ganti router.post dengan fetch agar bisa cek status 401
             const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content;
-            const res = await fetch('/testimonials', {
+
+            const response = await fetch('/testimonials', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
+                    Accept: 'application/json',
                     'X-CSRF-TOKEN': csrfToken || '',
+                    'X-Requested-With': 'XMLHttpRequest', // Important for Laravel to detect AJAX
                 },
                 body: JSON.stringify(formData),
             });
 
-            if (res.status === 401 && onShowLoginModal) {
-                onShowLoginModal();
-                setIsSubmitting(false);
+            // Handle authentication error
+            if (response.status === 401) {
+                if (onShowLoginModal) {
+                    onShowLoginModal();
+                } else {
+                    toast.error('Anda harus login terlebih dahulu');
+                }
                 return;
             }
 
-            if (!res.ok) {
-                toast.error('Gagal menambahkan testimonial');
-                setIsSubmitting(false);
+            // Handle other errors
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                toast.error(errorData.message || 'Gagal menambahkan testimonial');
+                console.error('Server response:', response.status, errorData);
                 return;
             }
 
+            // Success - get the new testimonial
+            const newTestimonial: Testimonial = await response.json();
+
+            // Update state immediately (optimistic update)
+            setTestimonials((prevTestimonials) => [newTestimonial, ...prevTestimonials]);
+
+            // Reset form
+            setFormData({
+                company: '',
+                position: '',
+                message: '',
+            });
+
+            // Show success message
             toast.success('Testimonial berhasil ditambahkan');
-            setFormData({ company: '', position: '', message: '' });
-            fetchTestimonials();
         } catch (error) {
-            console.error('Error submitting testimonial:', error);
-            toast.error('Gagal menambahkan testimonial');
+            console.error('Network error submitting testimonial:', error);
+            toast.error('Terjadi kesalahan jaringan. Silakan coba lagi.');
+        } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const handleInputChange = (field: string, value: string) => {
+        setFormData((prev) => ({
+            ...prev,
+            [field]: value,
+        }));
     };
 
     return (
@@ -96,7 +116,7 @@ export default function TestimonialSection({ onShowLoginModal }: { onShowLoginMo
             </div>
 
             <div className="mb-12 grid grid-cols-1 gap-8 lg:grid-cols-4">
-                {/* Rating Summary - Left Side */}
+                {/* Summary */}
                 <div className="lg:col-span-1">
                     <Card className="border-0 bg-gradient-to-br from-amber-50 to-orange-50 shadow-lg">
                         <CardHeader className="pb-4 text-center">
@@ -126,14 +146,10 @@ export default function TestimonialSection({ onShowLoginModal }: { onShowLoginMo
                     </Card>
                 </div>
 
-                {/* Testimonials Grid - Right Side */}
+                {/* Testimonials */}
                 <div className="lg:col-span-3">
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-                        {isLoading ? (
-                            <div className="col-span-3 flex items-center justify-center py-8">
-                                <Loader2 className="h-8 w-8 animate-spin text-amber-600" />
-                            </div>
-                        ) : testimonials.length === 0 ? (
+                        {testimonials.length === 0 ? (
                             <div className="col-span-3 py-8 text-center text-gray-500">Belum ada testimonial</div>
                         ) : (
                             testimonials.map((t) => (
@@ -141,7 +157,15 @@ export default function TestimonialSection({ onShowLoginModal }: { onShowLoginMo
                                     <CardHeader className="pb-3">
                                         <div className="flex items-start justify-between">
                                             <div>
-                                                <CardTitle className="text-lg text-gray-800">{t.user.name}</CardTitle>
+                                                <CardTitle className="flex items-center gap-2 text-gray-800">
+                                                    <Avatar>
+                                                        <AvatarFallback className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-200 text-gray-500">
+                                                            {t.user?.name ? t.user.name.charAt(0).toUpperCase() : 'U'}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                    {t.user?.name || 'Anonymous'}
+                                                </CardTitle>
+
                                                 <p className="text-sm font-medium text-gray-600">{t.position}</p>
                                                 <p className="text-sm text-gray-500">{t.company}</p>
                                             </div>
@@ -162,7 +186,7 @@ export default function TestimonialSection({ onShowLoginModal }: { onShowLoginMo
                 </div>
             </div>
 
-            {/* Form Testimonial */}
+            {/* Form */}
             <div className="mx-auto max-w-2xl">
                 <Card className="border-0 bg-white shadow-lg">
                     <CardHeader>
@@ -174,28 +198,31 @@ export default function TestimonialSection({ onShowLoginModal }: { onShowLoginMo
                             <Input
                                 placeholder="Jabatan"
                                 value={formData.position}
-                                onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+                                onChange={(e) => handleInputChange('position', e.target.value)}
                                 className="mb-4 border-gray-300"
+                                disabled={isSubmitting}
+                                required
                             />
-
                             <Input
                                 placeholder="Perusahaan / Instansi"
                                 value={formData.company}
-                                onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                                onChange={(e) => handleInputChange('company', e.target.value)}
                                 className="border-gray-300"
+                                disabled={isSubmitting}
+                                required
                             />
-
                             <Textarea
                                 placeholder="Tulis pengalaman Anda bekerja dengan PT. PMP Karya Mandiri..."
                                 value={formData.message}
-                                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                                onChange={(e) => handleInputChange('message', e.target.value)}
                                 className="min-h-[100px] border-gray-300"
                                 rows={4}
+                                disabled={isSubmitting}
+                                required
                             />
-
                             <Button
                                 type="submit"
-                                className="w-full bg-amber-600 py-3 font-medium text-white hover:bg-amber-700"
+                                className="w-full bg-amber-600 py-3 font-medium text-white hover:bg-amber-700 disabled:opacity-50"
                                 disabled={!formData.position || !formData.company || !formData.message || isSubmitting}
                             >
                                 {isSubmitting ? (

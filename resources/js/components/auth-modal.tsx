@@ -67,6 +67,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, children }) =
                 onSuccess: () => {
                     setIsOpen(false);
                     setLoginData({ email: '', password: '' });
+                    window.location.reload();
                 },
                 preserveScroll: true,
             });
@@ -81,6 +82,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, children }) =
                 onSuccess: () => {
                     setIsOpen(false);
                     setRegisterData({ name: '', email: '', password: '' });
+                    window.location.reload();
                 },
                 preserveScroll: true,
             });

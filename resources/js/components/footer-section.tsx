@@ -62,7 +62,7 @@ const FooterSection = () => {
                             </li>
                             <li>
                                 <Link
-                                    href={route('services')}
+                                    href={route('services.index')}
                                     className="flex items-center text-gray-300 transition-colors duration-200 hover:text-amber-400"
                                 >
                                     Layanan
@@ -70,18 +70,10 @@ const FooterSection = () => {
                             </li>
                             <li>
                                 <Link
-                                    href={route('news')}
+                                    href={route('news.index')}
                                     className="flex items-center text-gray-300 transition-colors duration-200 hover:text-amber-400"
                                 >
                                     Berita
-                                </Link>
-                            </li>
-                            <li>
-                                <Link
-                                    href={route('about')}
-                                    className="flex items-center text-gray-300 transition-colors duration-200 hover:text-amber-400"
-                                >
-                                    Tentang Kami
                                 </Link>
                             </li>
                         </ul>

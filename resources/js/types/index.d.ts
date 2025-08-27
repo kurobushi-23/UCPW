@@ -39,5 +39,50 @@ export interface User {
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
-    [key: string]: unknown; // This allows for additional properties...
+    [key: string]: unknown;
+}
+
+export interface Pagination {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number;
+    to: number;
+}
+
+export interface News {
+    id: number;
+    title: string;
+    description: string;
+    image?: string;
+    date: string;
+    author: string;
+    category?: string;
+    subcategory?: string;
+    readTime?: number;
+    likes: number;
+    views: number;
+}
+
+export interface Gallery {
+    id: number;
+    caption: string;
+    description: string;
+    image?: string;
+    category?: string;
+    date: string;
+}
+
+export interface Testimonial {
+    id: number;
+    user_id: number;
+    user: User;
+    position: string;
+    company: string;
+    message: string;
+    avatar?: string;
+    is_featured: boolean;
+    created_at: string;
+    updated_at: string;
 }

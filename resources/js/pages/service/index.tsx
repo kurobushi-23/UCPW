@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import AuthModal from '@/components/auth-modal';
 import FooterSection from '@/components/footer-section';
+import ReviewSection from '@/components/review-section';
 import { motion } from 'framer-motion';
-import { Award, Building, Calendar, Camera, Play, Star, Truck, User, Wrench } from 'lucide-react';
+import { Award, Building, Truck, Wrench } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { PageLayout } from '../../components/page-layout';
-import ReviewSection from '@/components/review-section';
-import AuthModal from '@/components/auth-modal';
 
 type Comment = {
     id: number;
@@ -298,7 +299,6 @@ export default function Index() {
             .catch(() => setIsLoadingReviews(false));
     }, [activeMenu]);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const handleSubmitComment = () => {
         if (!newComment.trim() || !newName.trim()) return;
 
@@ -321,21 +321,21 @@ export default function Index() {
         setNewRating(5);
     };
 
-    const renderStars = (rating: number, interactive = false, onRatingChange?: (rating: number) => void) => {
-        return (
-            <div className="flex">
-                {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                        key={star}
-                        className={`h-5 w-5 ${
-                            star <= rating ? 'fill-current text-yellow-400' : 'text-gray-300'
-                        } ${interactive ? 'cursor-pointer hover:text-yellow-400' : ''}`}
-                        onClick={() => interactive && onRatingChange && onRatingChange(star)}
-                    />
-                ))}
-            </div>
-        );
-    };
+    // const renderStars = (rating: number, interactive = false, onRatingChange?: (rating: number) => void) => {
+    //     return (
+    //         <div className="flex">
+    //             {[1, 2, 3, 4, 5].map((star) => (
+    //                 <Star
+    //                     key={star}
+    //                     className={`h-5 w-5 ${
+    //                         star <= rating ? 'fill-current text-yellow-400' : 'text-gray-300'
+    //                     } ${interactive ? 'cursor-pointer hover:text-yellow-400' : ''}`}
+    //                     onClick={() => interactive && onRatingChange && onRatingChange(star)}
+    //                 />
+    //             ))}
+    //         </div>
+    //     );
+    // };
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('id-ID', {
@@ -445,55 +445,6 @@ export default function Index() {
                                 </div>
                             </div>
 
-                            {/* Gallery */}
-                            <div className="rounded-2xl bg-white p-8 shadow-lg">
-                                <h3 className="mb-6 text-2xl font-bold text-gray-800">Galeri Kegiatan</h3>
-                                <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                                    {activeService.gallery.map((item) => (
-                                        <motion.div
-                                            key={item.id}
-                                            whileHover={{ scale: 1.02 }}
-                                            className="group cursor-pointer"
-                                            onClick={() => setSelectedImage(item.image)}
-                                        >
-                                            <div className="relative overflow-hidden rounded-xl">
-                                                <img
-                                                    src={item.image}
-                                                    alt={item.title}
-                                                    className="h-48 w-full object-cover transition-transform duration-300 group-hover:scale-110"
-                                                />
-                                                <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                                                    <Camera className="h-8 w-8 text-white" />
-                                                </div>
-                                            </div>
-                                            <h4 className="mt-3 font-semibold text-gray-800">{item.title}</h4>
-                                            <p className="text-sm text-gray-600">{item.description}</p>
-                                        </motion.div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Article */}
-                            <div className="rounded-2xl bg-white p-8 shadow-lg">
-                                <div className="mb-4 flex items-center gap-2">
-                                    <Play className="h-5 w-5 text-amber-600" />
-                                    <h3 className="text-2xl font-bold text-gray-800">Artikel Terkini</h3>
-                                </div>
-                                <h4 className="mb-3 text-xl font-semibold text-amber-700">{activeService.article.title}</h4>
-                                <div className="mb-4 flex items-center gap-4 text-sm text-gray-600">
-                                    <span className="flex items-center gap-1">
-                                        <User className="h-4 w-4" />
-                                        {activeService.article.author}
-                                    </span>
-                                    <span className="flex items-center gap-1">
-                                        <Calendar className="h-4 w-4" />
-                                        {formatDate(activeService.article.date)}
-                                    </span>
-                                    <span>{activeService.article.readTime} min read</span>
-                                </div>
-                                <p className="leading-relaxed text-gray-700">{activeService.article.content}</p>
-                            </div>
-
                             {/* Comments Section */}
                             <div className="rounded-2xl bg-white p-8 shadow-lg">
                                 <h3 className="mb-6 text-2xl font-bold text-gray-800">Ulasan & Rating</h3>
@@ -512,35 +463,6 @@ export default function Index() {
                                                 .catch(() => setIsLoadingReviews(false));
                                         }}
                                     />
-                                </div>
-                                {/* Comments List dari database */}
-                                <div className="space-y-4">
-                                    {isLoadingReviews ? (
-                                        <div className="text-center text-gray-500">Memuat ulasan...</div>
-                                    ) : reviews.length === 0 ? (
-                                        <div className="text-center text-gray-500">Belum ada ulasan untuk layanan ini.</div>
-                                    ) : (
-                                        reviews.map((comment) => (
-                                            <motion.div
-                                                key={comment.id}
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                className="rounded-lg border border-gray-200 p-4"
-                                            >
-                                                <div className="flex items-start gap-4">
-                                                    <img src={comment.avatar ?? `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=face`} alt={comment.name} className="h-10 w-10 rounded-full object-cover" />
-                                                    <div className="flex-1">
-                                                        <div className="mb-2 flex items-center justify-between">
-                                                            <h5 className="font-semibold text-gray-800">{comment.name}</h5>
-                                                            <span className="text-sm text-gray-500">{formatDate(comment.date ?? comment.created_at)}</span>
-                                                        </div>
-                                                        <div className="mb-2">{renderStars(comment.rating)}</div>
-                                                        <p className="text-gray-700">{comment.comment}</p>
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-                                        ))
-                                    )}
                                 </div>
                             </div>
                         </motion.div>
@@ -567,7 +489,10 @@ export default function Index() {
             )}
 
             {/* Login Modal */}
-            <AuthModal open={showLoginModal} onOpenChange={setShowLoginModal} />
+
+            <div className="hidden">
+                <AuthModal open={showLoginModal} onOpenChange={setShowLoginModal} />
+            </div>
 
             {/* Footer */}
             <div className="mt-12">

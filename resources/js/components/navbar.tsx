@@ -14,8 +14,8 @@ const Navbar = () => {
     const menuItems = [
         { name: 'Home', route: 'home' },
         { name: 'Profil', route: 'profile' },
-        { name: 'Layanan', route: 'services' },
-        { name: 'Berita', route: 'news' },
+        { name: 'Layanan', route: 'services.index' },
+        { name: 'Berita', route: 'news.index' },
     ];
 
     // Scroll effect
@@ -75,7 +75,7 @@ const Navbar = () => {
                     {auth.user ? (
                         auth.user.role === 'admin' ? (
                             <Link
-                                href={route('dashboard')}
+                                href={route('dashboard.index')}
                                 className="rounded-sm border border-[#19140035] px-4 py-1 text-sm text-[#1b1b18] transition-colors hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
                                 title="Dashboard"
                             >
@@ -136,7 +136,7 @@ const Navbar = () => {
                         {auth.user ? (
                             auth.user.role === 'admin' ? (
                                 <Link
-                                    href={route('dashboard')}
+                                    href={route('dashboard.index')}
                                     className="flex items-center rounded-sm border border-[#19140035] px-4 py-2 text-sm text-[#1b1b18] transition-colors hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
                                     onClick={closeMenu}
                                 >

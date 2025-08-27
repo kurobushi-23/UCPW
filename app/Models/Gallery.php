@@ -9,5 +9,6 @@ class Gallery extends Model
         'caption',
         'description',
         'image',
+        'category',
     ];
 }

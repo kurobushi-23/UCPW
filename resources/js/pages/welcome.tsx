@@ -152,12 +152,12 @@ export default function Welcome() {
 
             {/* testi section */}
             <div className="px-4 sm:px-6 lg:px-8">
-                <TestimonialSection />
+                <TestimonialSection testimonials={[]} />
             </div>
 
             {/* news section */}
             <div className="px-4 sm:px-6 lg:px-8">
-                <NewsSection />
+                <NewsSection news={[]} isLoading={false} />
             </div>
 
             {/* footer section */}
